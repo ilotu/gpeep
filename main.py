@@ -32,7 +32,7 @@ if __name__ == "__main__":
         
     if authentication_status:
         authenticator.logout("로그아웃", "sidebar")
-        st.sidebar.title(f"{name} 님, 환영합니다.")
+        st.sidebar.title(f"{name} 님, 환영합니다. ({config['credentials']['usernames'][username]['role']})")
 
         # Google Sheets 연동 설정
         scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
