@@ -1,0 +1,5 @@
+gspread
+streamlit
+oauth2client
+bbcode
+streamlit_authenticator
