@@ -21,9 +21,8 @@ def authenticate_users(config):
     )
 
     name, authentication_status, username = authenticator.login("Login", "main")
-    role = credentials['usernames'][username]['role']
 
-    return authenticator, name, authentication_status, username, role
+    return authenticator, name, authentication_status, username
 
 def connect_to_google_sheets(config):
     # Google Sheets 연동 설정
@@ -213,7 +212,7 @@ if __name__ == "__main__":
     )
 
     config = st.secrets
-    authenticator, name, authentication_status, username, role = authenticate_users(config)
+    authenticator, name, authentication_status, username = authenticate_users(config)
 
     if authentication_status == False:
         st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
@@ -222,6 +221,7 @@ if __name__ == "__main__":
         st.warning("아이디와 비밀번호를 입력하세요.")
 
     if authentication_status:
+        role = config['credentials']['usernames'][username]['role']
         authenticator.logout("로그아웃", "sidebar")
         st.sidebar.title(f"{name} 님, 환영합니다. ({role})")
 
