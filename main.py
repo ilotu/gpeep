@@ -201,7 +201,7 @@ def save_row(role, selected_row, edit_data):
 
 
 if __name__ == "__main__":
-        st.set_page_config(
+    st.set_page_config(
         page_title="Grammar PEEP 검수용 페이지",
         page_icon="📑",
         layout="centered",
