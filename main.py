@@ -270,7 +270,7 @@ if __name__ == "__main__":
 
         # "저장" 버튼
         with st.sidebar:
-            if st.sidebar.button('검토사항 저장 💾', help='저장을 눌러야 실제 데이터에 반영됩니다.'):
+            if st.sidebar.button('저장하기 💾', help='저장을 눌러야 실제 데이터에 반영됩니다.'):
                 with st.spinner(text="저장 중... 기다려 주세요 ⏳"):
                     row_idx = rows.index(selected_row) # 행 인덱스 찾기
                     save_row(role, selected_row, edit_data)
