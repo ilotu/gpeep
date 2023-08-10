@@ -164,12 +164,12 @@ def load_each_row(role):
         else:
             st.error("선택된 ID의 행을 찾을 수 없습니다.")
 
-        return edit_data
+    return edit_data
 
 def save_row(role, selected_row, edit_data):
     if role == 'proofreader':
         # 현재 날짜와 시간 가져오기
-        review_date = f'검토: {(datetime.now() - timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {username}'
+        review_date = f'검토: {(datetime.now() - timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {name}'
 
         # "검토 날짜" 열 이름으로 해당 열의 인덱스 찾기
         proofread_column_idx = list(selected_row.keys()).index('검토사항')+1
@@ -179,14 +179,14 @@ def save_row(role, selected_row, edit_data):
         # Google Sheets에 업데이트
         worksheet.update_cell(row_idx+2, proofread_column_idx, edit_data['검토사항'])
         worksheet.update_cell(row_idx+2, proofread_explain_column_idx, edit_data['해설 검토사항'])
-        worksheet.update_cell(row_idx+2, review_date_column_idx, f'검토: {review_date} / {username}')
+        worksheet.update_cell(row_idx+2, review_date_column_idx, review_date)
 
     elif role == 'editor':
         # 수정된 데이터를 리스트로 변환
         updated_row = [edit_data.get(key, value) for key, value in selected_row.items()]
 
         # 현재 날짜와 시간을 가져와서 포맷팅
-        review_date = f'수정: {(datetime.now() - timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {username}'
+        review_date = f'수정: {(datetime.now() - timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {name}'
 
         # "검토 날짜" 열 이름으로 해당 열의 인덱스 찾기
         review_date_column_idx = list(selected_row.keys()).index('검토 날짜')
@@ -197,7 +197,7 @@ def save_row(role, selected_row, edit_data):
         # Google Sheets에 업데이트
         worksheet.update('A' + str(row_idx + 2), [updated_row])
 
-    st.sidebar.info(f"저장 완료 💾\n\nID: {selected_row.get('ID')}\n\n시간:{datetime.now().strftime('%I:%M:%S %p')}")
+    st.sidebar.info(f"저장 완료 💾\n\nID: {selected_row.get('ID')}\n\n시간:{(datetime.now() - timedelta(hours=9)).strftime('%I:%M:%S %p')}")
 
     time.sleep(0.3)
     st.experimental_rerun()
