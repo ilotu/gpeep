@@ -8,12 +8,16 @@ import streamlit_authenticator as stauth
 
 
 def authenticate_users(config):
+    credentials = dict(config['credentials'])
+    cookie = dict(config['cookie'])
+    preauthorized_emails = list(config['preauthorized']['emails'])
+
     authenticator = stauth.Authenticate(
-    config['credentials'],
-    config['cookie']['name'],
-    config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
+        credentials,
+        cookie['name'],
+        cookie['key'],
+        cookie['expiry_days'],
+        preauthorized_emails
     )
 
     name, authentication_status, username = authenticator.login("Login", "main")
