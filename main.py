@@ -21,7 +21,7 @@ def authenticate_users(config):
     )
 
     name, authentication_status, username = authenticator.login("Login", "main")
-    role = config['credentials']['usernames'][username]['role']
+    role = credentials['usernames'][username]['role']
 
     return authenticator, name, authentication_status, username, role
 
