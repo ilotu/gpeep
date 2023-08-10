@@ -73,9 +73,13 @@ def parse_ids_for_indexing(rows):
 def load_each_row(role):
     edit_data = {}
     types = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'B1-1', 'B1-2', 'B1-N', 'B2', 'B3', 'B4-1', 'B4-2', 'B4-N', 'C1', 'C2', 'C3', 'C4', 'C4-2', 'C5', 'D1', 'D1-2', 'D1', 'D1-N', 'D2-1', 'D2-2', 'D3', 'D4']
+    directions = st.empty()
+    st.text("")
     left_column, right_column = st.columns(2)
 
     if role == 'proofreader':
+        directions.markdown("###### 🖊 검토 사항을 입력한 후 저장을 눌러 주세요.\n")
+
         if selected_row:
             for key, value in selected_row.items():
                 if key in ['검토사항', '해설 검토사항']:
@@ -111,6 +115,8 @@ def load_each_row(role):
             st.error("선택된 ID의 행을 찾을 수 없습니다.")
 
     elif role == 'editor':
+        directions.markdown("###### 🖊 수정 사항을 입력한 후 저장을 눌러 주세요.\n")
+
         if selected_row:
             for key, value in selected_row.items():
                 if key == 'ID':
@@ -195,6 +201,13 @@ def save_row(role, selected_row, edit_data):
 
 
 if __name__ == "__main__":
+        st.set_page_config(
+        page_title="Grammar PEEP 검수용 페이지",
+        page_icon="📑",
+        layout="centered",
+        initial_sidebar_state="auto",
+    )
+
     config = st.secrets
     authenticator, name, authentication_status, username, role = authenticate_users(config)
 
