@@ -128,7 +128,7 @@ def load_each_row(role):
                     left_column.markdown('\n')
 
                 elif key == 'stage':
-                    edit_data[key] = left_column.number_input(key.upper(), min_value=1, max_value=4, value=value, step=1)
+                    edit_data[key] = left_column.number_input(key.upper(), min_value=1, max_value=5, value=value, step=1)
 
                 elif key == '소분류':
                     edit_data[key] = right_column.text_input(key.upper(), value)
@@ -169,7 +169,7 @@ def load_each_row(role):
 def save_row(role, selected_row, edit_data):
     if role == 'proofreader':
         # 현재 날짜와 시간 가져오기
-        review_date = f'검토: {(datetime.now() - timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {name}'
+        review_date = f'검토: {(datetime.now() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {name}'
 
         # "검토 날짜" 열 이름으로 해당 열의 인덱스 찾기
         proofread_column_idx = list(selected_row.keys()).index('검토사항')+1
@@ -186,7 +186,7 @@ def save_row(role, selected_row, edit_data):
         updated_row = [edit_data.get(key, value) for key, value in selected_row.items()]
 
         # 현재 날짜와 시간을 가져와서 포맷팅
-        review_date = f'수정: {(datetime.now() - timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {name}'
+        review_date = f'수정: {(datetime.now() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {name}'
 
         # "검토 날짜" 열 이름으로 해당 열의 인덱스 찾기
         review_date_column_idx = list(selected_row.keys()).index('검토 날짜')
@@ -197,7 +197,7 @@ def save_row(role, selected_row, edit_data):
         # Google Sheets에 업데이트
         worksheet.update('A' + str(row_idx + 2), [updated_row])
 
-    st.sidebar.info(f"저장 완료 💾\n\nID: {selected_row.get('ID')}\n\n시간:{(datetime.now() - timedelta(hours=9)).strftime('%I:%M:%S %p')}")
+    st.sidebar.info(f"저장 완료 💾\n\nID: {selected_row.get('ID')}\n\n시간:{(datetime.now() + timedelta(hours=9)).strftime('%I:%M:%S %p')}")
 
     time.sleep(0.3)
     st.experimental_rerun()
