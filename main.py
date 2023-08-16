@@ -40,12 +40,21 @@ def connect_to_google_sheets(config):
 
 def load_spreadsheets(config, client):
     # 스프레드시트 열기
-    sheet_ids_json = json.loads(config['spreadsheet_ids']['sheet_ids_json'])
-    spreadsheet_name = st.sidebar.selectbox('문법 영역', sheet_ids_json.keys())
-    spreadsheet = client.open_by_key(sheet_ids_json.get(spreadsheet_name))
+    grade = st.sidebar.selectbox('학년', ['중등', '초등 초급', '초등 중급', '초등 고급'])
+    if grade.startswith("초등"):
+        basic_ids_json = json.loads(config['spreadsheet_ids']['basic_ids_json'])
+        spreadsheet = client.open_by_key(basic_ids_json.get(grade))
+        worksheet_names = [worksheet.title for worksheet in spreadsheet.worksheets() if worksheet.title not in ['종합문제', 'ID Index']]
+        selected_category = st.sidebar.selectbox('문법 영역', worksheet_names)
+        worksheet = spreadsheet.worksheet(selected_category)
+        rows = worksheet.get_all_records()
 
-    worksheet = spreadsheet.worksheet("문제") # 특정 워크시트 열기 (이름을 사용)
-    rows = worksheet.get_all_records() # 데이터 읽기
+    elif grade == "중등":
+        inter_ids_json = json.loads(config['spreadsheet_ids']['inter_ids_json'])
+        spreadsheet_name = st.sidebar.selectbox('문법 영역', inter_ids_json.keys())
+        selected_spreadsheet = client.open_by_key(inter_ids_json.get(spreadsheet_name))
+        worksheet = selected_spreadsheet.worksheet("문제") # 특정 워크시트 열기 (이름을 사용)
+        rows = worksheet.get_all_records() # 데이터 읽기
 
     return worksheet, rows
 
@@ -74,6 +83,9 @@ def parse_ids_for_indexing(rows):
     return selected_row
 
 def load_each_row(role):
+    parser = bbcode.Parser()
+    parser.add_simple_formatter('size', '<font size="%(size)s">%(value)s</font>', standalone=False)
+
     edit_data = {}
     types = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'B1-1', 'B1-2', 'B1-N', 'B2', 'B3', 'B4-1', 'B4-2', 'B4-N', 'C1', 'C2', 'C3', 'C4', 'C4-2', 'C5', 'D1', 'D1-2', 'D1', 'D1-N', 'D2-1', 'D2-2', 'D3', 'D4']
     directions = st.empty()
@@ -86,7 +98,7 @@ def load_each_row(role):
         if selected_row:
             for key, value in selected_row.items():
                 if key in ['검토사항', '해설 검토사항']:
-                    edit_data[key] = st.text_area(key.upper(), value, height=90, placeholder=f'{key}을 입력하세요.')
+                    edit_data[key] = st.text_area(key.upper(), value, height=90, placeholder=f'{key}을 입력하세요.', key=key)
 
                 elif key == 'ID':
                     left_column.markdown(f"<div class='text-input-label'>{key.upper()}</div>", unsafe_allow_html=True)
@@ -108,11 +120,11 @@ def load_each_row(role):
                     right_column.markdown(f"<div class='text-input-container'>{value}</div>", unsafe_allow_html=True)
                     right_column.markdown('\n')
 
-                elif key and key not in ['stage', '중복']:
+                elif key and key in ['instructions', 'k-passage', 'e-passage', 'option', 'sentence', 'solve', 'translation', 'explanation', '검토 날짜']:
                     if 'picture' in key and '그림' not in selected_row['instructions']:
                         continue
                     st.markdown(f"<div class='text-input-label'>{key.upper()}</div>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='text-input-container'>{bbcode.render_html(value)}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='text-input-container'>{parser.format(value)}</div>", unsafe_allow_html=True)
                     st.markdown('\n')
         else:
             st.error("선택된 ID의 행을 찾을 수 없습니다.")
@@ -128,39 +140,39 @@ def load_each_row(role):
                     left_column.markdown('\n')
 
                 elif key == 'stage':
-                    edit_data[key] = left_column.number_input(key.upper(), min_value=1, max_value=5, value=value, step=1)
+                    edit_data[key] = left_column.number_input(key.upper(), min_value=1, max_value=5, value=value, step=1, key=key)
 
                 elif key == '소분류':
-                    edit_data[key] = right_column.text_input(key.upper(), value)
+                    edit_data[key] = right_column.text_input(key.upper(), value, key=key)
 
                 elif key == 'type':
                     default_index = types.index(value) if value in types else -1
-                    edit_data[key] = right_column.selectbox(key.upper(), types, index=default_index)
+                    edit_data[key] = right_column.selectbox(key.upper(), types, index=default_index, key=key)
 
                 elif key == 'e-passage':
-                    edit_data[key] = st.text_area(key.upper(), value, height=90)
+                    edit_data[key] = st.text_area(key.upper(), value, height=90, key=key)
 
                 elif key == 'solve':
-                    edit_data[key] = st.text_area(key.upper(), value, height=90)
-                    st.markdown(bbcode.render_html(f'{value}'), unsafe_allow_html=True)
+                    edit_data[key] = st.text_area(key.upper(), value, height=90, key=key)
+                    st.markdown(parser.format(f'{value}'), unsafe_allow_html=True)
 
                 elif key == 'explanation':
-                    edit_data[key] = st.text_area(key.upper(), value, height=150)
-                    st.markdown(bbcode.render_html(f'{value}'), unsafe_allow_html=True)
+                    edit_data[key] = st.text_area(key.upper(), value, height=200, key=key)
+                    st.markdown(parser.format(f'{value}'), unsafe_allow_html=True)
 
                 elif key == 'translation':
-                    edit_data[key] = st.text_input(key.upper(), value)
-                    st.markdown(bbcode.render_html(f'{value}'), unsafe_allow_html=True)
+                    edit_data[key] = st.text_input(key.upper(), value, key=key)
+                    st.markdown(parser.format(f'{value}'), unsafe_allow_html=True)
 
-                elif key == '검토 날짜':
+                elif key in ['검토사항', '해설 검토사항', '검토 날짜']:
                     st.markdown(f"<div class='text-input-label'>{key.upper()}</div>", unsafe_allow_html=True)
                     st.markdown(f"<div class='text-input-container'>{value}</div>", unsafe_allow_html=True)
                     st.markdown('\n')
 
-                elif key and key not in ['소분류', 'stage', '중복', '검토사항', '해설 검토사항', '검토 날짜']:
+                elif key and key in ['instructions', 'picture1', 'picture2', 'k-passage', 'option', 'sentence']:
                     if 'picture' in key and '그림' not in selected_row['instructions']:
                         continue
-                    edit_data[key] = st.text_input(key.upper(), value)
+                    edit_data[key] = st.text_input(key.upper(), value, key=key)
         else:
             st.error("선택된 ID의 행을 찾을 수 없습니다.")
 
@@ -169,7 +181,7 @@ def load_each_row(role):
 def save_row(role, selected_row, edit_data):
     if role == 'proofreader':
         # 현재 날짜와 시간 가져오기
-        review_date = f'검토: {(datetime.now() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {name}'
+        review_date = f'검토: {datetime.now().strftime("%Y-%m-%d %H:%M")} / {name}'
 
         # "검토 날짜" 열 이름으로 해당 열의 인덱스 찾기
         proofread_column_idx = list(selected_row.keys()).index('검토사항')+1
@@ -186,7 +198,7 @@ def save_row(role, selected_row, edit_data):
         updated_row = [edit_data.get(key, value) for key, value in selected_row.items()]
 
         # 현재 날짜와 시간을 가져와서 포맷팅
-        review_date = f'수정: {(datetime.now() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")} / {name}'
+        review_date = f'수정: {datetime.now().strftime("%Y-%m-%d %H:%M")} / {name}'
 
         # "검토 날짜" 열 이름으로 해당 열의 인덱스 찾기
         review_date_column_idx = list(selected_row.keys()).index('검토 날짜')
@@ -197,7 +209,7 @@ def save_row(role, selected_row, edit_data):
         # Google Sheets에 업데이트
         worksheet.update('A' + str(row_idx + 2), [updated_row])
 
-    st.sidebar.info(f"저장 완료 💾\n\nID: {selected_row.get('ID')}\n\n시간:{(datetime.now() + timedelta(hours=9)).strftime('%I:%M:%S %p')}")
+    st.sidebar.info(f"저장 완료 💾\n\nID: {selected_row.get('ID')}\n\n시간:{datetime.now().strftime('%I:%M:%S %p')}")
 
     time.sleep(0.3)
     st.experimental_rerun()
@@ -234,11 +246,11 @@ if __name__ == "__main__":
         <style>
         @import url(//fonts.googleapis.com/earlyaccess/notosanskr.css);
 
-        .css-nahz7x, .css-1qg05tj, .st-c8, .css-8ojfln, .css-7ym5gk, .st-af, .text-input-container {
+        .css-nahz7x, .css-1qg05tj, .st-c8, .css-8ojfln, .css-7ym5gk, .st-af, .css-5rimss, .text-input-container {
             font-family: 'Noto Sans KR', sans-serif;
         }
 
-        .css-nahz7x, .st-af, .st-c8 {
+        .css-nahz7x, .st-af, .st-c8, .css-5rimss {
             font-size: 15px;
         }
 
@@ -259,24 +271,24 @@ if __name__ == "__main__":
             border-radius: 5px;
             padding: 7px;
             margin: 3px 0;
-            background-color: #FFFFFF;
+            background-color: #FAFAFA;
             font-size: 15px;
         }
         </style>
         """
         st.markdown(custom_css, unsafe_allow_html=True)
 
+        save_button = st.sidebar.empty()
+        refresh_button = st.sidebar.empty()
+
         edit_data = load_each_row(role)
 
         # "저장" 버튼
-        with st.sidebar:
-            if st.sidebar.button('저장하기 💾', help='저장을 눌러야 실제 데이터에 반영됩니다.'):
-                with st.spinner(text="저장 중... 기다려 주세요 ⏳"):
-                    row_idx = rows.index(selected_row) # 행 인덱스 찾기
-                    save_row(role, selected_row, edit_data)
+        if save_button.button('저장하기 💾', help='저장을 눌러야 실제 데이터에 반영됩니다.'):
+            with st.spinner(text="저장 중... 기다려 주세요 ⏳"):
+                row_idx = rows.index(selected_row) # 행 인덱스 찾기
+                save_row(role, selected_row, edit_data)
 
-            # 새로고침 버튼
-            if st.sidebar.button('새로고침'):
-                with st.spinner(text="새로고침 중... 기다려 주세요 ⏳"):
-                    time.sleep(0.3)
-                    st.experimental_rerun()
+        # 새로고침 버튼
+        if refresh_button.button('새로고침'):
+            st.experimental_rerun()
