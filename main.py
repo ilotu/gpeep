@@ -20,7 +20,7 @@ def authenticate_users(config):
         preauthorized_emails
     )
 
-    name, authentication_status, username = authenticator.login("main")
+    name, authentication_status, username = authenticator.login("main", fields=["username", "password"])
 
     return authenticator, name, authentication_status, username
 
