@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import json, time, copy
+import json, time
 
 import gspread, bbcode
 import streamlit as st
@@ -8,9 +8,9 @@ import streamlit_authenticator as stauth
 
 
 def authenticate_users(config):
-    credentials = copy.deepcopy(config['credentials'])
-    cookie = config['cookie']
-    preauthorized_emails = config['preauthorized']['emails']
+    credentials = st.secrets["credentials"].to_dict()
+    cookie = dict(config['cookie'])
+    preauthorized_emails = list(config['preauthorized']['emails'])
 
     authenticator = stauth.Authenticate(
         credentials,
@@ -20,7 +20,7 @@ def authenticate_users(config):
         preauthorized_emails
     )
 
-    name, authentication_status, username = authenticator.login("main", fields=["username", "password"])
+    name, authentication_status, username = authenticator.login("main")
 
     return authenticator, name, authentication_status, username
 
