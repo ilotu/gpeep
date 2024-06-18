@@ -87,7 +87,7 @@ def load_each_row(role):
     parser.add_simple_formatter('size', '<font size="%(size)s">%(value)s</font>', standalone=False)
 
     edit_data = {}
-    types = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'B1-1', 'B1-2', 'B1-N', 'B2', 'B3', 'B4-1', 'B4-2', 'B4-N', 'C1', 'C2', 'C3', 'C4', 'C4-2', 'C5', 'D1', 'D1-2', 'D1', 'D1-N', 'D2-1', 'D2-2', 'D3', 'D4']
+    types = ['A1', 'A2', 'A3-1', 'A3-2', 'A4-2', 'A5', 'A6', 'B1', 'B1-N', 'B2', 'B3', 'B4-1', 'B4-2', 'B4-N', 'C1', 'C2', 'C3', 'C4', 'C4-2', 'C5', 'D1', 'D1-2', 'D2-1', 'D2-2', 'D3', 'D4']
     directions = st.empty()
     st.text("")
     left_column, right_column = st.columns(2)
