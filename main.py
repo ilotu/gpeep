@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import json, time
+import copy
 
 import gspread, bbcode
 import streamlit as st
@@ -8,12 +9,17 @@ import streamlit_authenticator as stauth
 
 
 def authenticate_users():
+    # Deep copy of credentials and preauthorized emails
+    credentials = copy.deepcopy(st.secrets['credentials'])
+    preauthorized = copy.deepcopy(st.secrets['preauthorized'])
+
+    # Initialize the authenticator with copied, mutable data
     authenticator = stauth.Authenticate(
-        dict(st.secrets['credentials']),
+        credentials,
         st.secrets['cookie']['name'],
         st.secrets['cookie']['key'],
         st.secrets['cookie']['expiry_days'],
-        st.secrets['preauthorized']
+        preauthorized.get('emails', [])
     )
 
     name, authentication_status, username = authenticator.login("main", max_login_attempts=10)
