@@ -8,7 +8,7 @@ import streamlit_authenticator as stauth
 
 
 def authenticate_users(config):
-    credentials = st.secrets["credentials"].to_dict()
+    credentials = st.secrets["credentials"]
     cookie = dict(config['cookie'])
     preauthorized_emails = list(config['preauthorized']['emails'])
 
@@ -23,7 +23,6 @@ def authenticate_users(config):
     login_result = authenticator.login("main", max_login_attempts=10)
     if login_result is not None:
         name, authentication_status, username = login_result
-        st.error(f"User: {name}, Authenticated: {authentication_status}, Username: {username}")
     else:
         st.error("Authentication failed or login process returned None.")
 
