@@ -229,7 +229,8 @@ if __name__ == "__main__":
         initial_sidebar_state="auto",
     )
 
-    authenticator, name, authentication_status, username = authenticate_users()
+    config = st.secrets
+    authenticator, name, authentication_status, username = authenticate_users(config)
 
     if authentication_status == False:
         st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
@@ -242,8 +243,8 @@ if __name__ == "__main__":
         authenticator.logout("로그아웃", "sidebar")
         st.sidebar.title(f"{name} 님, 환영합니다. ({role})")
 
-        client = connect_to_google_sheets()
-        worksheet, rows = load_spreadsheets(client)
+        client = connect_to_google_sheets(config)
+        worksheet, rows = load_spreadsheets(config, client)
         selected_row = parse_ids_for_indexing(rows)
 
         # css 적용
