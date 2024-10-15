@@ -20,11 +20,7 @@ def authenticate_users(config):
         preauthorized_emails
     )
 
-    login_result = authenticator.login("main", max_login_attempts=10)
-    if login_result is not None:
-        name, authentication_status, username = login_result
-    else:
-        st.error("Authentication failed or login process returned None.")
+    name, authentication_status, username = authenticator.login("main", max_login_attempts=10)
 
     return authenticator, name, authentication_status, username
 
