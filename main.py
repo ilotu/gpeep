@@ -10,8 +10,8 @@ import streamlit_authenticator as stauth
 
 def authenticate_users():
     # Deep copy of credentials and preauthorized emails
-    credentials = copy.deepcopy(st.secrets['credentials'])
-    preauthorized = copy.deepcopy(st.secrets['preauthorized'])
+    credentials = copy.deepcopy(st.secrets['credentials']).to_dict()
+    preauthorized = list(copy.deepcopy(st.secrets['preauthorized']))
 
     # Initialize the authenticator with copied, mutable data
     authenticator = stauth.Authenticate(
