@@ -20,7 +20,7 @@ def authenticate_users(config):
         preauthorized_emails
     )
 
-    name, authentication_status, username = authenticator.login("main")
+    name, authentication_status, username = authenticator.login("main", fields=["username", "password"])
 
     return authenticator, name, authentication_status, username
 
@@ -223,7 +223,7 @@ def save_row(role, selected_row, edit_data):
 
 if __name__ == "__main__":
     st.set_page_config(
-        page_title="Grammar PEEP 검수용 페이지",
+        page_title="GPEEP",
         page_icon="📑",
         layout="centered",
         initial_sidebar_state="auto",
