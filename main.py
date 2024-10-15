@@ -7,10 +7,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 import streamlit_authenticator as stauth
 
 
-def authenticate_users():
-    credentials = st.secrets["credentials"]
-    cookie = st.secrets['cookie']
-    preauthorized_emails = st.secrets['preauthorized']['emails']
+def authenticate_users(config):
+    credentials = st.secrets["credentials"].to_dict()
+    cookie = dict(config['cookie'])
+    preauthorized_emails = list(config['preauthorized']['emails'])
 
     authenticator = stauth.Authenticate(
         credentials,
@@ -28,13 +28,13 @@ def authenticate_users():
 
     return authenticator, name, authentication_status, username
 
-def connect_to_google_sheets():
+def connect_to_google_sheets(config):
     # Google Sheets 연동 설정
     scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
             "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
 
     # JSON 문자열을 파이썬 딕셔너리로 변환
-    creds_json = json.loads(st.secrets["google_service_account"]["creds_json"])
+    creds_json = json.loads(config["google_service_account"]["creds_json"])
 
     # 서비스 계정 자격 증명 생성
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
@@ -42,11 +42,11 @@ def connect_to_google_sheets():
 
     return client
 
-def load_spreadsheets(client):
+def load_spreadsheets(config, client):
     # 스프레드시트 열기
     grade = st.sidebar.selectbox('학년', ['중등', '초등 초급', '초등 중급', '초등 고급'])
     if grade.startswith("초등"):
-        basic_ids_json = json.loads(st.secrets['spreadsheet_ids']['basic_ids_json'])
+        basic_ids_json = json.loads(config['spreadsheet_ids']['basic_ids_json'])
         spreadsheet = client.open_by_key(basic_ids_json.get(grade))
         worksheet_names = [worksheet.title for worksheet in spreadsheet.worksheets() if worksheet.title not in ['종합문제', 'ID Index']]
         selected_category = st.sidebar.selectbox('문법 영역', worksheet_names)
@@ -54,7 +54,7 @@ def load_spreadsheets(client):
         rows = worksheet.get_all_records()
 
     elif grade == "중등":
-        inter_ids_json = json.loads(st.secrets['spreadsheet_ids']['inter_ids_json'])
+        inter_ids_json = json.loads(config['spreadsheet_ids']['inter_ids_json'])
         spreadsheet_name = st.sidebar.selectbox('문법 영역', inter_ids_json.keys())
         selected_spreadsheet = client.open_by_key(inter_ids_json.get(spreadsheet_name))
         worksheet = selected_spreadsheet.worksheet("문제") # 특정 워크시트 열기 (이름을 사용)
@@ -233,7 +233,8 @@ if __name__ == "__main__":
         initial_sidebar_state="auto",
     )
 
-    authenticator, name, authentication_status, username = authenticate_users()
+    config = st.secrets
+    authenticator, name, authentication_status, username = authenticate_users(config)
 
     if authentication_status == False:
         st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
@@ -242,12 +243,12 @@ if __name__ == "__main__":
         st.warning("아이디와 비밀번호를 입력하세요.")
 
     if authentication_status:
-        role = st.secrets['credentials']['usernames'][username]['role']
+        role = config['credentials']['usernames'][username]['role']
         authenticator.logout("로그아웃", "sidebar")
         st.sidebar.title(f"{name} 님, 환영합니다. ({role})")
 
-        client = connect_to_google_sheets()
-        worksheet, rows = load_spreadsheets(client)
+        client = connect_to_google_sheets(config)
+        worksheet, rows = load_spreadsheets(config, client)
         selected_row = parse_ids_for_indexing(rows)
 
         # css 적용
