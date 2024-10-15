@@ -22,7 +22,11 @@ def authenticate_users():
         preauthorized.get('emails', [])
     )
 
-    name, authentication_status, username = authenticator.login("main", max_login_attempts=10)
+    login_result = authenticator.login("main", max_login_attempts=10)
+    if login_result is not None:
+        name, authentication_status, username = login_result
+    else:
+        st.error("Authentication failed or login process returned None.")
 
     return authenticator, name, authentication_status, username
 
